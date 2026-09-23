@@ -55,7 +55,7 @@ Feed order: `posts.created_at` newest first. No ranking.
 
 **You do (manual):**
 1. Create a project at [supabase.com](https://supabase.com). Save the database password somewhere.
-2. Open **SQL Editor → New query**, paste the SQL below, and click Run.
+2. Open **SQL Editor → New query**, paste the contents of [`supabase/schema.sql`](../supabase/schema.sql) (the same SQL is below), and click Run.
 3. Go to **Authentication → Sign In / Providers → Email** and turn **off** "Confirm email". This makes Step 8 testing much easier. You can turn it back on later.
 4. Go to **Project Settings → API** (or **Connect**) and copy the **Project URL** and the **anon / publishable key**.
 5. Add them to Vercel: **Project → Settings → Environment Variables**:
