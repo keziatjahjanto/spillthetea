@@ -23,6 +23,20 @@ Feed order: `posts.created_at` newest first. No ranking.
 
 ---
 
+## Step 0 — Setup
+
+- [x] Node.js 20+ installed (`node -v`)
+- [x] Git installed, and the repo cloned with `origin` → `github.com/keziatjahjanto/spillthetea`
+- [x] GitHub CLI logged in, with push access to the repo confirmed
+- [x] Antigravity installed
+- [ ] **Vercel account:** sign up at [vercel.com](https://vercel.com) with **Continue with GitHub** so it can see the repo
+- [ ] **Supabase account:** sign up at [supabase.com](https://supabase.com), ideally also with GitHub. Don't create the project yet (that's Step 2).
+- [ ] Open this folder in Antigravity (**File → Open Folder** → `spillthetea`)
+
+**Done when:** you're logged into Vercel and Supabase, and Antigravity has the repo open.
+
+---
+
 ## Step 1 — Scaffold
 
 **You do (manual):**
