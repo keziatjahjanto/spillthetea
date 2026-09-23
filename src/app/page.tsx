@@ -11,10 +11,6 @@ export default async function Home() {
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1">
-      <header className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
-        <h1 className="text-xl font-bold tracking-tight">Spill The Tea ☕</h1>
-      </header>
-
       {error ? (
         <p className="px-4 py-8 text-center text-red-600">
           Couldn&apos;t load the feed: {error.message}
