@@ -57,11 +57,8 @@ Feed order: `posts.created_at` newest first. No ranking.
 1. Create a project at [supabase.com](https://supabase.com). Save the database password somewhere.
 2. Open **SQL Editor → New query**, paste the contents of [`supabase/schema.sql`](../supabase/schema.sql) (the same SQL is below), and click Run.
 3. Go to **Authentication → Sign In / Providers → Email** and turn **off** "Confirm email". This makes Step 8 testing much easier. You can turn it back on later.
-4. Go to **Project Settings → API** (or **Connect**) and copy the **Project URL** and the **anon / publishable key**.
-5. Add them to Vercel: **Project → Settings → Environment Variables**:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-6. Put the same two values in a local `.env.local` file in the repo root. Never commit this file. Next.js's `.gitignore` already ignores it.
+4. Go to **Project Settings → API Keys** and copy the **Project URL** and the **publishable key** (`sb_publishable_...`). Put both in `src/lib/supabase/config.ts`. They're public by design; row-level security protects the data. **Never** put the `service_role` / secret key there.
+   *Why not Vercel env vars?* The Vercel↔Supabase integration on this project injects `NEXT_PUBLIC_SUPABASE_*` pointing at a different, empty project, so the app reads its config from code instead.
 
 ```sql
 -- ============ TABLES ============
@@ -126,7 +123,7 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 ```
 
-**Done when:** **Table Editor** shows `profiles`, `posts`, and `replies`, and both env vars are set in Vercel and in `.env.local`.
+**Done when:** **Table Editor** shows `profiles`, `posts`, and `replies`, and `src/lib/supabase/config.ts` has this project's URL and publishable key.
 
 ---
 
@@ -149,7 +146,7 @@ where username = 'teamaster';
 ```
 
 **Prompt for Antigravity:**
-> Read docs/BUILD_GUIDE.md first. We're on Step 3. Install `@supabase/supabase-js` and `@supabase/ssr`. Following the current official Supabase guide for Next.js App Router with `@supabase/ssr`, create `src/lib/supabase/server.ts` (server client using cookies) and `src/lib/supabase/client.ts` (browser client). Read the env vars `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Make the home page (`src/app/page.tsx`) a server component that fetches posts newest-first with `supabase.from('posts').select('id, content, created_at, profiles(username), replies(count)').order('created_at', { ascending: false })` and renders a Threads-like feed. Each post shows @username, relative time (e.g. "5m"), content, and reply count. Put the post card in its own component. Use a clean, centered, mobile-first single column in Tailwind. Do **not** add auth or forms yet. Run `npm run build`, then commit and push.
+> Read docs/BUILD_GUIDE.md first. We're on Step 3. Install `@supabase/supabase-js` and `@supabase/ssr`. Following the current official Supabase guide for Next.js App Router with `@supabase/ssr`, create `src/lib/supabase/server.ts` (server client using cookies) and `src/lib/supabase/client.ts` (browser client). Read the URL and key from `src/lib/supabase/config.ts` (not env vars). Make the home page (`src/app/page.tsx`) a server component that fetches posts newest-first with `supabase.from('posts').select('id, content, created_at, profiles(username), replies(count)').order('created_at', { ascending: false })` and renders a Threads-like feed. Each post shows @username, relative time (e.g. "5m"), content, and reply count. Put the post card in its own component. Use a clean, centered, mobile-first single column in Tailwind. Do **not** add auth or forms yet. Run `npm run build`, then commit and push.
 
 **Done when:** the Vercel URL shows your 3 hand-typed posts, newest first.
 
@@ -201,7 +198,7 @@ After every step:
 
 Common problems:
 - **Build fails on Vercel but works locally:** usually a TypeScript or ESLint error. Run `npm run build` locally.
-- **"Invalid API key" / blank feed on Vercel:** the env vars are missing in Vercel. Add them and **Redeploy**.
+- **"Could not find the table" on Vercel:** the app is talking to the wrong Supabase project. Check `src/lib/supabase/config.ts`.
 - **Posting fails silently:** check RLS. The insert must send `author_id` equal to the logged-in user's id.
 
 ---
