@@ -31,7 +31,7 @@ Feed order: `posts.created_at` newest first. No ranking.
 - [x] Antigravity installed
 - [x] **Vercel account:** sign up at [vercel.com](https://vercel.com) with **Continue with GitHub** so it can see the repo
 - [x] **Supabase account:** sign up at [supabase.com](https://supabase.com), ideally also with GitHub. Don't create the project yet (that's Step 2).
-- [ ] Open this folder in Antigravity (**File → Open Folder** → `spillthetea`)
+- [x] Open this folder in Antigravity (**File → Open Folder** → `spillthetea`)
 
 **Done when:** you're logged into Vercel and Supabase, and Antigravity has the repo open.
 
@@ -42,6 +42,7 @@ Feed order: `posts.created_at` newest first. No ranking.
 **You do (manual):**
 1. Open this folder in Antigravity.
 2. After the agent finishes, go to [vercel.com/new](https://vercel.com/new), import `keziatjahjanto/spillthetea`, and click Deploy. Keep all the defaults.
+3. In Vercel go to **Project → Settings → Deployment Protection** and turn **off** "Vercel Authentication". Otherwise visitors are sent to a Vercel login page instead of the app, and the Step 8 second account can't get in.
 
 **Prompt for Antigravity:**
 > Read docs/BUILD_GUIDE.md first. We're on Step 1. Scaffold a Next.js app in the **current folder** (not a subfolder) with `npx create-next-app@latest .` using TypeScript, ESLint, Tailwind, the App Router, the `src/` directory, and the default `@/*` import alias. If it refuses because of existing files, move `README.md` and `docs/` to a temp folder, scaffold, then move them back. Replace the default home page with a simple page that says "Spill The Tea ☕" and "Coming soon". Run `npm run build` to make sure it builds. Then commit and push to `main`.
