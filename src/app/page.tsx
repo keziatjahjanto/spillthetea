@@ -18,6 +18,10 @@ export default async function Home() {
       {error ? (
         <p className="px-4 py-8 text-center text-red-600">
           Couldn&apos;t load the feed: {error.message}
+          <br />
+          <span className="text-xs text-zinc-500">
+            Database: {process.env.NEXT_PUBLIC_SUPABASE_URL ?? "not set"}
+          </span>
         </p>
       ) : posts.length === 0 ? (
         <p className="px-4 py-8 text-center text-zinc-500">
