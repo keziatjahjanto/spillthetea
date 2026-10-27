@@ -19,7 +19,7 @@ create policy "insert own posts" on public.posts for insert to authenticated
       thread_root_id is null
       or exists (
         select 1 from public.posts root
-        where root.id = thread_root_id
+        where root.id = posts.thread_root_id -- the new row (see 08_fix_thread_insert_policy.sql)
           and root.author_id = (select auth.uid())
           and root.thread_root_id is null
       )

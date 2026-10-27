@@ -60,7 +60,11 @@ export async function createPost(
       image_path: imagePath,
       thread_root_id: threadRootId,
     });
-  if (error) return { error: "Couldn't post. Try again." };
+  if (error) {
+    // Shows up in the server / Vercel logs with the real reason.
+    console.error("createPost failed:", error);
+    return { error: "Couldn't post. Try again." };
+  }
 
   // Feed, post pages, profiles and search all show posts and reply counts.
   revalidatePath("/", "layout");
@@ -140,7 +144,10 @@ export async function createReply(
   const { error } = await supabase
     .from("replies")
     .insert({ post_id: postId, author_id: user.id, content });
-  if (error) return { error: "Couldn't reply. Try again." };
+  if (error) {
+    console.error("createReply failed:", error);
+    return { error: "Couldn't reply. Try again." };
+  }
 
   // Feed, post pages, profiles and search all show posts and reply counts.
   revalidatePath("/", "layout");

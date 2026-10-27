@@ -88,7 +88,7 @@ create policy "insert own posts"   on public.posts   for insert to authenticated
   (select auth.uid()) = author_id
   and (thread_root_id is null or exists (
     select 1 from public.posts root
-    where root.id = thread_root_id and root.author_id = (select auth.uid()) and root.thread_root_id is null
+    where root.id = posts.thread_root_id and root.author_id = (select auth.uid()) and root.thread_root_id is null
   ))
 );
 create policy "delete own posts"   on public.posts   for delete to authenticated using ((select auth.uid()) = author_id);
