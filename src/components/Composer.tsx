@@ -13,6 +13,9 @@ type Props = {
   submitLabel: string;
   // Set when replying, so the action knows which post the reply belongs to.
   postId?: number;
+  // Where to go after a successful post (e.g. back to the feed).
+  redirectTo?: string;
+  autoFocus?: boolean;
 };
 
 export default function Composer({
@@ -21,6 +24,8 @@ export default function Composer({
   placeholder,
   submitLabel,
   postId,
+  redirectTo,
+  autoFocus,
 }: Props) {
   const [state, formAction, pending] = useActionState(action, { error: null });
   const [content, setContent] = useState("");
@@ -43,6 +48,9 @@ export default function Composer({
       {postId !== undefined && (
         <input type="hidden" name="postId" value={postId} />
       )}
+      {redirectTo && (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      )}
       <div
         aria-hidden
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold uppercase text-amber-900 dark:bg-amber-900 dark:text-amber-100"
@@ -57,7 +65,8 @@ export default function Composer({
           onChange={(e) => setContent(e.target.value)}
           placeholder={placeholder}
           aria-label={placeholder}
-          rows={2}
+          rows={autoFocus ? 5 : 2}
+          autoFocus={autoFocus}
           className="mt-1 w-full resize-none bg-transparent outline-none placeholder:text-zinc-500"
         />
 

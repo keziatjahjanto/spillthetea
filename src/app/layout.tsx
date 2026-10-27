@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import BottomNav from "@/components/BottomNav";
 import Header from "@/components/Header";
 
 const geistSans = Geist({
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* Bottom padding keeps the last post clear of the fixed bottom nav. */}
+      <body className="min-h-full flex flex-col pb-16">
         <Header />
         {children}
+        <BottomNav />
       </body>
     </html>
   );

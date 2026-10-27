@@ -39,6 +39,11 @@ export async function createPost(
   if (error) return { error: "Couldn't post. Try again." };
 
   revalidatePath("/");
+  // The full-page composer sends people back to the feed. Only same-site paths.
+  const redirectTo = String(formData.get("redirectTo") ?? "");
+  if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+    redirect(redirectTo);
+  }
   return { error: null, ok: true };
 }
 
