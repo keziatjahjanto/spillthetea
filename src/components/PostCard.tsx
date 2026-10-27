@@ -1,16 +1,21 @@
+import { deletePost } from "@/app/posts/actions";
 import { timeAgo } from "@/lib/time";
 
 export type Post = {
   id: number;
+  author_id: string;
   content: string;
   created_at: string;
   profiles: { username: string } | null;
   replies: { count: number }[];
 };
 
-export default function PostCard({ post }: { post: Post }) {
+type Props = { post: Post; currentUserId?: string };
+
+export default function PostCard({ post, currentUserId }: Props) {
   const username = post.profiles?.username ?? "unknown";
   const replyCount = post.replies[0]?.count ?? 0;
+  const isMine = currentUserId === post.author_id;
 
   return (
     <article className="flex gap-3 border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
@@ -30,6 +35,17 @@ export default function PostCard({ post }: { post: Post }) {
           >
             {timeAgo(post.created_at)}
           </time>
+          {isMine && (
+            <form action={deletePost} className="ml-auto">
+              <input type="hidden" name="id" value={post.id} />
+              <button
+                type="submit"
+                className="text-sm text-zinc-500 hover:text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            </form>
+          )}
         </div>
         <p className="mt-1 whitespace-pre-wrap break-words">{post.content}</p>
         <p className="mt-2 text-sm text-zinc-500">
