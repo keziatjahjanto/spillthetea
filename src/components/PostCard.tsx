@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { deletePost } from "@/app/posts/actions";
 import { timeAgo } from "@/lib/time";
 
@@ -47,10 +49,12 @@ export default function PostCard({ post, currentUserId }: Props) {
             </form>
           )}
         </div>
-        <p className="mt-1 whitespace-pre-wrap break-words">{post.content}</p>
-        <p className="mt-2 text-sm text-zinc-500">
-          {replyCount} {replyCount === 1 ? "reply" : "replies"}
-        </p>
+        <Link href={`/post/${post.id}`} className="block">
+          <p className="mt-1 whitespace-pre-wrap break-words">{post.content}</p>
+          <p className="mt-2 text-sm text-zinc-500 hover:underline">
+            {replyCount} {replyCount === 1 ? "reply" : "replies"}
+          </p>
+        </Link>
       </div>
     </article>
   );

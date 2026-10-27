@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { createPost } from "@/app/posts/actions";
 import Composer from "@/components/Composer";
 import PostCard, { type Post } from "@/components/PostCard";
 import { getCurrentUser } from "@/lib/auth";
@@ -19,7 +20,12 @@ export default async function Home() {
   return (
     <main className="mx-auto w-full max-w-xl flex-1">
       {user ? (
-        <Composer username={user.username} />
+        <Composer
+          username={user.username}
+          action={createPost}
+          placeholder="What's the tea?"
+          submitLabel="Post"
+        />
       ) : (
         <p className="border-b border-zinc-200 px-4 py-4 text-center text-sm text-zinc-500 dark:border-zinc-800">
           <Link href="/login" className="font-semibold underline">

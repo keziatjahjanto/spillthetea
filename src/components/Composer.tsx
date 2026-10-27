@@ -2,15 +2,27 @@
 
 import { useActionState, useState } from "react";
 
-import { createPost, type PostState } from "@/app/posts/actions";
+import type { PostState } from "@/app/posts/actions";
 
-const MAX_POST_LENGTH = 500;
+const MAX_LENGTH = 500;
 
-export default function Composer({ username }: { username: string }) {
-  const [state, formAction, pending] = useActionState<PostState, FormData>(
-    createPost,
-    { error: null },
-  );
+type Props = {
+  username: string;
+  action: (prev: PostState, formData: FormData) => Promise<PostState>;
+  placeholder: string;
+  submitLabel: string;
+  // Set when replying, so the action knows which post the reply belongs to.
+  postId?: number;
+};
+
+export default function Composer({
+  username,
+  action,
+  placeholder,
+  submitLabel,
+  postId,
+}: Props) {
+  const [state, formAction, pending] = useActionState(action, { error: null });
   const [content, setContent] = useState("");
   const [lastState, setLastState] = useState(state);
 
@@ -21,13 +33,16 @@ export default function Composer({ username }: { username: string }) {
   }
 
   const length = content.trim().length;
-  const tooLong = length > MAX_POST_LENGTH;
+  const tooLong = length > MAX_LENGTH;
 
   return (
     <form
       action={formAction}
       className="flex gap-3 border-b border-zinc-200 px-4 py-4 dark:border-zinc-800"
     >
+      {postId !== undefined && (
+        <input type="hidden" name="postId" value={postId} />
+      )}
       <div
         aria-hidden
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold uppercase text-amber-900 dark:bg-amber-900 dark:text-amber-100"
@@ -40,8 +55,8 @@ export default function Composer({ username }: { username: string }) {
           name="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What's the tea?"
-          aria-label="What's the tea?"
+          placeholder={placeholder}
+          aria-label={placeholder}
           rows={2}
           className="mt-1 w-full resize-none bg-transparent outline-none placeholder:text-zinc-500"
         />
@@ -56,14 +71,14 @@ export default function Composer({ username }: { username: string }) {
           <span
             className={`text-sm ${tooLong ? "text-red-600" : "text-zinc-500"}`}
           >
-            {length}/{MAX_POST_LENGTH}
+            {length}/{MAX_LENGTH}
           </span>
           <button
             type="submit"
             disabled={pending || length === 0 || tooLong}
             className="rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
           >
-            {pending ? "Posting…" : "Post"}
+            {pending ? `${submitLabel}…` : submitLabel}
           </button>
         </div>
       </div>
