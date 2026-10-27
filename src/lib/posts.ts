@@ -1,8 +1,10 @@
 import { SUPABASE_URL } from "@/lib/supabase/config";
 
 // Columns every post list needs: author, image, thread, and reply/like/repost counts.
+// The author link is named explicitly: likes, saves, and reposts also join
+// posts to profiles, so a bare profiles(...) is ambiguous.
 export const POST_SELECT =
-  "id, author_id, content, image_path, thread_root_id, created_at, profiles(username), replies(count), likes(count), reposts(count)";
+  "id, author_id, content, image_path, thread_root_id, created_at, profiles!posts_author_id_fkey(username), replies(count), likes(count), reposts(count)";
 
 // Pictures and GIFs live in this public Storage bucket under <user id>/<file>.
 export const MEDIA_BUCKET = "post-media";
