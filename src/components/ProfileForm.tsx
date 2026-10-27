@@ -8,12 +8,22 @@ import { updateProfile, type ProfileState } from "@/app/profile/actions";
 const inputClass =
   "w-full rounded-xl border border-zinc-300 bg-transparent px-4 py-3 outline-none focus:border-zinc-500 dark:border-zinc-700";
 
-type Props = { username: string; displayName: string; bio: string };
+type Props = {
+  username: string;
+  displayName: string;
+  bio: string;
+  instagram: string;
+};
 
-export default function ProfileForm({ username, displayName, bio }: Props) {
+export default function ProfileForm({
+  username,
+  displayName,
+  bio,
+  instagram,
+}: Props) {
   const [state, formAction, pending] = useActionState<ProfileState, FormData>(
     updateProfile,
-    { error: null, values: { displayName, bio } },
+    { error: null, values: { displayName, bio, instagram } },
   );
 
   return (
@@ -42,6 +52,18 @@ export default function ProfileForm({ username, displayName, bio }: Props) {
           maxLength={160}
           rows={3}
           className={`${inputClass} resize-none font-normal`}
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-semibold">
+        Instagram
+        <input
+          name="instagram"
+          defaultValue={state.values?.instagram}
+          placeholder="@yourusername"
+          maxLength={60}
+          autoCapitalize="none"
+          autoCorrect="off"
+          className={`${inputClass} font-normal`}
         />
       </label>
 

@@ -5,7 +5,9 @@ A Threads-style app: post, read the feed, reply. Built in 8 steps. Push after ev
 **Stack:** Next.js (App Router, TypeScript, Tailwind) · Supabase (Postgres + Auth) · Vercel · GitHub (`keziatjahjanto/spillthetea`)
 
 **Scope:** posts, a chronological feed, replies, accounts.
-**Not building:** algorithmic recommendations, reposts/quotes, trending topics, DMs, advanced moderation. If the agent starts adding any of these, stop it.
+**Not building:** algorithmic recommendations, quote posts, trending topics, DMs (the Messages tab is a "coming soon" page), advanced moderation. If the agent starts adding any of these, stop it.
+
+**Added after Step 8 (approved):** bottom nav + search, profiles, follows, likes, saved posts, pictures/GIFs, music links, add-to-thread, plain reposts, notifications. Database changes for these live in `supabase/sql/` and are run by hand in the Supabase SQL Editor.
 
 **How to use this with Antigravity:** start every prompt with *"Read docs/BUILD_GUIDE.md first."* so the agent knows the plan and the limits. Do one step per agent conversation. Check the "Done when" list before you move on.
 

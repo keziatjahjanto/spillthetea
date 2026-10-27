@@ -11,7 +11,7 @@ export default async function EditProfilePage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, bio")
+    .select("display_name, bio, instagram")
     .eq("id", user.id)
     .single();
 
@@ -22,6 +22,7 @@ export default async function EditProfilePage() {
         username={user.username}
         displayName={profile?.display_name ?? ""}
         bio={profile?.bio ?? ""}
+        instagram={profile?.instagram ?? ""}
       />
     </main>
   );

@@ -18,6 +18,7 @@ export default async function ComposePage() {
         action={createPost}
         placeholder="What's the tea?"
         submitLabel="Post"
+        mediaUserId={user.id}
         redirectTo="/"
         autoFocus
       />

@@ -1,5 +1,6 @@
 -- Profile details: optional display name and bio, editable by the owner only.
--- Run once in the Supabase SQL Editor. Already folded into ../schema.sql.
+-- Run once in the Supabase SQL Editor (kept out of supabase/migrations so the
+-- Supabase GitHub integration does not re-run it). Already in ../schema.sql.
 
 alter table public.profiles
   add column display_name text check (char_length(display_name) <= 50),

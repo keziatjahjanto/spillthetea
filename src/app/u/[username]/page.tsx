@@ -2,22 +2,29 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { signOut } from "@/app/auth/actions";
-import PostCard, { type Post } from "@/components/PostCard";
+import { toggleFollow } from "@/app/profile/actions";
+import { InstagramIcon } from "@/components/icons";
+import { type Post } from "@/components/PostCard";
+import PostList from "@/components/PostList";
 import ReplyCard, { type Reply } from "@/components/ReplyCard";
 import { getCurrentUser } from "@/lib/auth";
+import { POST_SELECT } from "@/lib/posts";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function UserPage(props: PageProps<"/u/[username]">) {
   const { username } = await props.params;
   const { tab } = await props.searchParams;
-  const showReplies = tab === "replies";
+  const activeTab =
+    tab === "replies" || tab === "media" || tab === "reposts"
+      ? tab
+      : ("posts" as const);
 
   const user = await getCurrentUser();
   const supabase = await createClient();
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, username, display_name, bio, created_at")
+    .select("id, username, display_name, bio, instagram, created_at")
     .eq("username", username.toLowerCase())
     .maybeSingle();
   if (profileError) {
@@ -30,6 +37,29 @@ export default async function UserPage(props: PageProps<"/u/[username]">) {
   if (!profile) notFound();
 
   const isMe = user?.id === profile.id;
+
+  // Counts only (head: true skips fetching rows), plus whether I follow them.
+  const [followers, following, mine] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("following_id", profile.id),
+    supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", profile.id),
+    user && !isMe
+      ? supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("following_id", profile.id)
+          .maybeSingle()
+      : null,
+  ]);
+  const followerCount = followers.count ?? 0;
+  const followingCount = following.count ?? 0;
+  const isFollowing = !!mine?.data;
   const joined = new Date(profile.created_at).toLocaleDateString(undefined, {
     month: "long",
     year: "numeric",
@@ -55,7 +85,60 @@ export default async function UserPage(props: PageProps<"/u/[username]">) {
         {profile.bio && (
           <p className="mt-3 whitespace-pre-wrap break-words">{profile.bio}</p>
         )}
-        <p className="mt-3 text-sm text-zinc-500">Joined {joined}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-zinc-500">
+          <span>
+            <strong className="text-foreground">{followerCount}</strong>{" "}
+            {followerCount === 1 ? "follower" : "followers"}
+          </span>
+          <span>
+            <strong className="text-foreground">{followingCount}</strong>{" "}
+            following
+          </span>
+          {profile.instagram && (
+            <a
+              href={`https://instagram.com/${profile.instagram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-foreground hover:underline"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              {profile.instagram}
+            </a>
+          )}
+        </div>
+        <p className="mt-1 text-sm text-zinc-500">Joined {joined}</p>
+
+        {!isMe && (
+          <div className="mt-4">
+            {user ? (
+              <form action={toggleFollow}>
+                <input type="hidden" name="targetId" value={profile.id} />
+                <input
+                  type="hidden"
+                  name="isFollowing"
+                  value={String(isFollowing)}
+                />
+                <button
+                  type="submit"
+                  className={`w-full rounded-xl px-4 py-2 text-sm font-semibold ${
+                    isFollowing
+                      ? "border border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                      : "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                  }`}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+              </form>
+            ) : (
+              <Link
+                href="/login"
+                className="block w-full rounded-xl bg-zinc-900 px-4 py-2 text-center text-sm font-semibold text-white dark:bg-white dark:text-zinc-900"
+              >
+                Follow
+              </Link>
+            )}
+          </div>
+        )}
 
         {isMe && (
           <div className="mt-4 flex gap-3">
@@ -78,18 +161,39 @@ export default async function UserPage(props: PageProps<"/u/[username]">) {
       </section>
 
       <nav className="flex border-b border-zinc-200 text-sm font-semibold dark:border-zinc-800">
-        <Tab href={`/u/${profile.username}`} active={!showReplies}>
+        <Tab href={`/u/${profile.username}`} active={activeTab === "posts"}>
           Posts
         </Tab>
-        <Tab href={`/u/${profile.username}?tab=replies`} active={showReplies}>
+        <Tab
+          href={`/u/${profile.username}?tab=replies`}
+          active={activeTab === "replies"}
+        >
           Replies
+        </Tab>
+        <Tab
+          href={`/u/${profile.username}?tab=media`}
+          active={activeTab === "media"}
+        >
+          Media
+        </Tab>
+        <Tab
+          href={`/u/${profile.username}?tab=reposts`}
+          active={activeTab === "reposts"}
+        >
+          Reposts
         </Tab>
       </nav>
 
-      {showReplies ? (
+      {activeTab === "replies" ? (
         <UserReplies authorId={profile.id} currentUserId={user?.id} />
+      ) : activeTab === "reposts" ? (
+        <UserReposts authorId={profile.id} currentUserId={user?.id} />
       ) : (
-        <UserPosts authorId={profile.id} currentUserId={user?.id} />
+        <UserPosts
+          authorId={profile.id}
+          currentUserId={user?.id}
+          mediaOnly={activeTab === "media"}
+        />
       )}
     </main>
   );
@@ -121,14 +225,22 @@ function Tab({
 
 type ListProps = { authorId: string; currentUserId?: string };
 
-async function UserPosts({ authorId, currentUserId }: ListProps) {
+// Media = only posts with a picture or GIF.
+async function UserPosts({
+  authorId,
+  currentUserId,
+  mediaOnly,
+}: ListProps & { mediaOnly?: boolean }) {
   const supabase = await createClient();
-  const { data: posts, error } = await supabase
+  let query = supabase
     .from("posts")
-    .select(
-      "id, author_id, content, created_at, profiles(username), replies(count)",
-    )
-    .eq("author_id", authorId)
+    .select(POST_SELECT)
+    .eq("author_id", authorId);
+  // Media shows every picture; Posts shows each thread once, by its first post.
+  query = mediaOnly
+    ? query.not("image_path", "is", null)
+    : query.is("thread_root_id", null);
+  const { data: posts, error } = await query
     .order("created_at", { ascending: false })
     .returns<Post[]>();
 
@@ -140,11 +252,13 @@ async function UserPosts({ authorId, currentUserId }: ListProps) {
     );
   }
   if (posts.length === 0) {
-    return <p className="px-4 py-8 text-center text-zinc-500">No posts yet.</p>;
+    return (
+      <p className="px-4 py-8 text-center text-zinc-500">
+        {mediaOnly ? "No pictures or GIFs yet." : "No posts yet."}
+      </p>
+    );
   }
-  return posts.map((post) => (
-    <PostCard key={post.id} post={post} currentUserId={currentUserId} />
-  ));
+  return <PostList posts={posts} currentUserId={currentUserId} />;
 }
 
 async function UserReplies({ authorId, currentUserId }: ListProps) {
@@ -176,4 +290,30 @@ async function UserReplies({ authorId, currentUserId }: ListProps) {
       showPostLink
     />
   ));
+}
+
+// Posts this person reposted, most recently reposted first.
+async function UserReposts({ authorId, currentUserId }: ListProps) {
+  const supabase = await createClient();
+  const { data: reposts, error } = await supabase
+    .from("reposts")
+    .select(`created_at, posts(${POST_SELECT})`)
+    .eq("user_id", authorId)
+    .order("created_at", { ascending: false })
+    .returns<{ created_at: string; posts: Post | null }[]>();
+
+  if (error) {
+    return (
+      <p className="px-4 py-8 text-center text-red-600">
+        Couldn&apos;t load reposts: {error.message}
+      </p>
+    );
+  }
+  const posts = reposts.flatMap((r) => (r.posts ? [r.posts] : []));
+  if (posts.length === 0) {
+    return (
+      <p className="px-4 py-8 text-center text-zinc-500">No reposts yet.</p>
+    );
+  }
+  return <PostList posts={posts} currentUserId={currentUserId} />;
 }

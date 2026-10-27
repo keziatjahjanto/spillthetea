@@ -1,8 +1,10 @@
 import Link from "next/link";
 
-import PostCard, { type Post } from "@/components/PostCard";
+import { type Post } from "@/components/PostCard";
+import PostList from "@/components/PostList";
 import { SearchIcon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/auth";
+import { POST_SELECT } from "@/lib/posts";
 import { createClient } from "@/lib/supabase/server";
 
 const LIMIT = 20;
@@ -64,9 +66,7 @@ async function Results({ query }: { query: string }) {
       .limit(LIMIT),
     supabase
       .from("posts")
-      .select(
-        "id, author_id, content, created_at, profiles(username), replies(count)",
-      )
+      .select(POST_SELECT)
       .ilike("content", pattern)
       .order("created_at", { ascending: false })
       .limit(LIMIT)
@@ -119,9 +119,7 @@ async function Results({ query }: { query: string }) {
           <h2 className="px-4 pb-1 pt-4 text-sm font-semibold text-zinc-500">
             Posts
           </h2>
-          {posts.data.map((post) => (
-            <PostCard key={post.id} post={post} currentUserId={user?.id} />
-          ))}
+          <PostList posts={posts.data} currentUserId={user?.id} />
         </section>
       )}
     </>
