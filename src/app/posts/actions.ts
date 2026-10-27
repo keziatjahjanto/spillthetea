@@ -38,7 +38,8 @@ export async function createPost(
     .insert({ author_id: user.id, content });
   if (error) return { error: "Couldn't post. Try again." };
 
-  revalidatePath("/");
+  // Feed, post pages, profiles and search all show posts and reply counts.
+  revalidatePath("/", "layout");
   // The full-page composer sends people back to the feed. Only same-site paths.
   const redirectTo = String(formData.get("redirectTo") ?? "");
   if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
@@ -60,7 +61,8 @@ export async function deletePost(formData: FormData) {
   // RLS also blocks deleting someone else's post; the author check is a second guard.
   await supabase.from("posts").delete().eq("id", id).eq("author_id", user.id);
 
-  revalidatePath("/");
+  // Feed, post pages, profiles and search all show posts and reply counts.
+  revalidatePath("/", "layout");
   // The post's own page no longer exists, so always land on the feed.
   redirect("/");
 }
@@ -87,8 +89,8 @@ export async function createReply(
     .insert({ post_id: postId, author_id: user.id, content });
   if (error) return { error: "Couldn't reply. Try again." };
 
-  revalidatePath(`/post/${postId}`);
-  revalidatePath("/");
+  // Feed, post pages, profiles and search all show posts and reply counts.
+  revalidatePath("/", "layout");
   return { error: null, ok: true };
 }
 
@@ -105,6 +107,6 @@ export async function deleteReply(formData: FormData) {
 
   await supabase.from("replies").delete().eq("id", id).eq("author_id", user.id);
 
-  revalidatePath(`/post/${postId}`);
-  revalidatePath("/");
+  // Feed, post pages, profiles and search all show posts and reply counts.
+  revalidatePath("/", "layout");
 }

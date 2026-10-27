@@ -2,6 +2,8 @@
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique not null check (char_length(username) between 3 and 20),
+  display_name text check (char_length(display_name) <= 50),
+  bio text check (char_length(bio) <= 160),
   created_at timestamptz not null default now()
 );
 
@@ -38,6 +40,11 @@ create policy "insert own posts"   on public.posts   for insert to authenticated
 create policy "delete own posts"   on public.posts   for delete to authenticated using ((select auth.uid()) = author_id);
 create policy "insert own replies" on public.replies for insert to authenticated with check ((select auth.uid()) = author_id);
 create policy "delete own replies" on public.replies for delete to authenticated using ((select auth.uid()) = author_id);
+
+-- Users can edit their own display name and bio, but not their username
+create policy "update own profile" on public.profiles for update to authenticated using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
+revoke update on public.profiles from authenticated, anon;
+grant update (display_name, bio) on public.profiles to authenticated;
 
 -- ============ AUTO-CREATE PROFILE ON SIGN UP ============
 create function public.handle_new_user()

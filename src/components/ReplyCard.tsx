@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { deleteReply } from "@/app/posts/actions";
+import LinkifiedText from "@/components/LinkifiedText";
 import { timeAgo } from "@/lib/time";
 
 export type Reply = {
@@ -10,9 +13,18 @@ export type Reply = {
   profiles: { username: string } | null;
 };
 
-type Props = { reply: Reply; currentUserId?: string };
+type Props = {
+  reply: Reply;
+  currentUserId?: string;
+  // On a profile's Replies tab, link back to the post being replied to.
+  showPostLink?: boolean;
+};
 
-export default function ReplyCard({ reply, currentUserId }: Props) {
+export default function ReplyCard({
+  reply,
+  currentUserId,
+  showPostLink,
+}: Props) {
   const username = reply.profiles?.username ?? "unknown";
   const isMine = currentUserId === reply.author_id;
 
@@ -26,7 +38,9 @@ export default function ReplyCard({ reply, currentUserId }: Props) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-semibold">@{username}</span>
+          <Link href={`/u/${username}`} className="font-semibold hover:underline">
+            @{username}
+          </Link>
           <time
             dateTime={reply.created_at}
             title={new Date(reply.created_at).toLocaleString()}
@@ -47,7 +61,17 @@ export default function ReplyCard({ reply, currentUserId }: Props) {
             </form>
           )}
         </div>
-        <p className="mt-1 whitespace-pre-wrap break-words">{reply.content}</p>
+        <p className="mt-1 whitespace-pre-wrap break-words">
+          <LinkifiedText text={reply.content} />
+        </p>
+        {showPostLink && (
+          <Link
+            href={`/post/${reply.post_id}`}
+            className="mt-2 inline-block text-sm text-zinc-500 hover:underline"
+          >
+            View post →
+          </Link>
+        )}
       </div>
     </article>
   );

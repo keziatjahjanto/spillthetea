@@ -32,7 +32,11 @@ export default async function BottomNav() {
         >
           <HeartIcon />
         </NavLink>
-        <NavLink href={authed("/profile")} label="Profile" match="/profile">
+        <NavLink
+          href={user ? `/u/${user.username}` : "/login"}
+          label="Profile"
+          match={user ? `/u/${user.username}` : "/profile"}
+        >
           <UserIcon />
         </NavLink>
       </div>
